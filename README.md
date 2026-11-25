@@ -1,5 +1,11 @@
 # Token Radar — make.fun token-radar-01 entry
 
+[![make.fun · token-radar-01](https://make.fun/badge/token-radar-01.svg)](https://make.fun/bounty/token-radar-01?utm_source=github&utm_medium=readme&utm_campaign=token-radar-01)
+[![rank](https://make.fun/badge/token-radar-01/xctengfeiwls-creator/token-radar-01/rank.svg)](https://make.fun/bounty/token-radar-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=token-radar-01)
+[![reward](https://make.fun/badge/token-radar-01/xctengfeiwls-creator/token-radar-01/reward.svg)](https://make.fun/bounty/token-radar-01?utm_source=github&utm_medium=readme&utm_campaign=token-radar-01)
+
+Built for the [make.fun "Build the best token launch radar" bounty](https://make.fun/bounty/token-radar-01) — $1,325 in USDC.
+
 A radar that ranks pre-token protocols by what a token would be worth if the
 protocol issued one today and its record stayed as it is, each with a farm plan.
 
