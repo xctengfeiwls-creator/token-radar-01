@@ -27,7 +27,7 @@ body {
 }
 
 h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; font-weight: 700; line-height: 1.2; margin: 0; }
-h1 { font-size: 30px; letter-spacing: -0.01em; }
+h1 { font-size: 32px; letter-spacing: -0.01em; }
 h2 { font-size: 21px; }
 h3 { font-size: 16px; }
 
@@ -62,16 +62,30 @@ input, select { font: inherit; color: inherit; }
 }
 
 /* lede */
-.lede { display: flex; gap: 32px; padding: 26px 0 20px; align-items: flex-end; flex-wrap: wrap; }
+.lede { display: flex; gap: 32px; padding: 30px 0 22px; align-items: flex-end; flex-wrap: wrap; }
 .lede > div:first-child { flex: 1 1 480px; }
-.lede p { color: var(--muted); font-size: 15.5px; max-width: 640px; margin-top: 10px; }
+.lede p { color: var(--muted); font-size: 15.5px; max-width: 640px; margin-top: 12px; }
 .facts { display: flex; gap: 10px; flex-wrap: wrap; }
 .fact {
   background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 10px 14px; min-width: 128px;
+  padding: 12px 16px; min-width: 128px;
 }
 .fact span { display: block; font-size: 12px; color: var(--muted); }
-.fact b { font-size: 20px; font-family: Georgia, "Times New Roman", serif; }
+.fact b { font-size: 21px; font-family: Georgia, "Times New Roman", serif; }
+
+/* top-10 chart */
+.chart { margin-bottom: 14px; padding: 20px 22px 16px; }
+.chart h2 { margin-bottom: 4px; }
+.chart .sub { margin-bottom: 10px; }
+.chart-svg svg { width: 100%; height: auto; display: block; }
+.chart-svg text { font-size: 13px; fill: var(--ink); }
+.chart-rank { font-family: Georgia, "Times New Roman", serif; font-weight: 700; fill: var(--muted); }
+.chart-name { font-weight: 600; }
+.chart-value { fill: var(--muted); font-variant-numeric: tabular-nums; }
+.chart-bar { fill: var(--teal); }
+.chart-bar.first { fill: var(--teal-dark); }
+.chart-grid { stroke: var(--line); stroke-width: 1; }
+.chart-tick { fill: var(--muted); font-size: 11.5px; }
 
 /* controls */
 .controls {
@@ -156,32 +170,37 @@ tbody tr[data-selected="true"] { background: var(--teal-soft); box-shadow: inset
 /* detail dialog */
 .detail {
   border: 1px solid var(--line); border-radius: 14px; padding: 0;
-  width: min(680px, 92vw); max-height: 88vh; overflow: auto;
+  width: min(680px, 92vw); max-height: 92vh; overflow: auto;
   background: var(--card); color: var(--ink);
   box-shadow: 0 18px 60px rgba(27, 37, 48, 0.28);
 }
 .detail::backdrop { background: rgba(27, 37, 48, 0.45); }
 .detail-head {
   display: flex; justify-content: space-between; gap: 16px; align-items: flex-start;
-  padding: 20px 24px 0;
+  padding: 18px 24px 0;
 }
 .detail-head .brand-name { font-size: 13px; color: var(--teal-dark); text-transform: uppercase; letter-spacing: 0.05em; }
 .detail-head h2 { font-size: 24px; margin: 4px 0 2px; }
 .close { border: 1px solid var(--line); background: var(--paper); border-radius: 7px; padding: 6px 12px; }
-.detail-section { padding: 16px 24px 20px; border-top: 1px solid var(--line); margin-top: 16px; }
+.detail-section { padding: 14px 24px 16px; border-top: 1px solid var(--line); margin-top: 14px; }
 .detail-section:first-of-type { border-top: 0; }
 .detail-section h3 { margin-bottom: 10px; }
 .equation { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
 .equation > div {
   display: flex; justify-content: space-between; gap: 10px;
-  border-bottom: 1px solid var(--line); padding: 6px 0; font-size: 14px;
+  border-bottom: 1px solid var(--line); padding: 5px 0; font-size: 14px;
 }
 .equation span { color: var(--muted); }
 .equation b { font-variant-numeric: tabular-nums; }
 .steps { margin: 0; padding-left: 22px; }
-.steps li { margin-bottom: 12px; }
+.steps li { margin-bottom: 10px; }
 .steps li b { display: block; font-weight: 600; }
 .steps .cost { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; }
+.totals {
+  background: var(--teal-soft); border: 1px solid #bcd8d0; border-radius: 8px;
+  padding: 12px 16px; margin-top: 16px; font-size: 14px;
+}
+.totals b { color: var(--teal-dark); }
 
 /* judge note + footer */
 .judge-note, .foot { max-width: 1180px; margin: 0 auto; padding: 0 28px; }

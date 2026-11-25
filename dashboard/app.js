@@ -40,6 +40,9 @@
   function fmtMult(n) {
     return 'x' + n.toFixed(2);
   }
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
 
   function el(tag, attrs) {
     var node = document.createElement(tag);
@@ -111,6 +114,99 @@
       if (av > bv) return state.dir;
       return a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0;
     });
+  }
+
+  /** The ten strongest rows as an inline SVG bar chart, log scale, drawn from the same data.js.
+      It follows the current filter, so the chart and the table below it always agree. */
+  function chartPanel() {
+    var top = rows().slice().sort(function (a, b) { return b.implied_value_usd - a.implied_value_usd; }).slice(0, 10);
+    if (!top.length) return null;
+    var maxV = top[0].implied_value_usd;
+    var lo = Math.min(Math.log10(1e7), Math.log10(maxV) - 1), hi = Math.log10(maxV);
+    var labelW = 216, valueW = 96, rowH = 34, pad = 10, w = 1000;
+    var plotW = w - labelW - valueW - 16;
+    var h = pad + top.length * rowH + 26;
+    var parts = ['<svg viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="Top 10 protocols by implied value, log scale">'];
+    [1e7, 1e8, 1e9].forEach(function (v) {
+      var frac = (Math.log10(v) - lo) / (hi - lo);
+      if (frac < 0 || frac > 1) return;
+      var x = labelW + frac * plotW;
+      parts.push('<line x1="' + Math.round(x) + '" y1="' + pad + '" x2="' + Math.round(x) + '" y2="' + (pad + top.length * rowH) + '" class="chart-grid"/>');
+      parts.push('<text x="' + Math.round(x) + '" y="' + (pad + top.length * rowH + 18) + '" class="chart-tick">' + fmtUsd(v) + '</text>');
+    });
+    top.forEach(function (r, i) {
+      var y = pad + i * rowH;
+      var frac = (Math.log10(r.implied_value_usd) - lo) / (hi - lo);
+      var bw = Math.max(24, Math.round(frac * plotW));
+      parts.push('<text x="2" y="' + (y + 17) + '" class="chart-rank">' + r.rank + '</text>');
+      parts.push('<text x="28" y="' + (y + 17) + '" class="chart-name">' + esc(r.name) + '</text>');
+      parts.push('<rect x="' + labelW + '" y="' + (y + 4) + '" width="' + bw + '" height="16" rx="3" class="chart-bar' + (i === 0 ? ' first' : '') + '"/>');
+      parts.push('<text x="' + (labelW + bw + 8) + '" y="' + (y + 17) + '" class="chart-value">' + fmtUsd(r.implied_value_usd) + '</text>');
+    });
+    parts.push('</svg>');
+    return el('section', { class: 'panel chart' },
+      el('h2', { text: 'Top 10 by implied value' }),
+      el('p', { class: 'sub', text: 'Log scale: each step is 10x. The bars are the same numbers the table below and board.json carry.' }),
+      el('div', { class: 'chart-svg', html: parts.join('') })
+    );
+  }
+
+  /** A farm plan's totals, parsed from its six step strings, never invented. */
+  function planTotals(steps) {
+    function costOf(s) {
+      var m = s.match(/ Cost: (.+) Time: /);
+      return m ? m[1] : '';
+    }
+    function timeOf(s) {
+      var m = s.match(/ Time: (.+)\.$/);
+      return m ? m[1] : '';
+    }
+    function amount(re, s) {
+      var m = s.match(re);
+      if (!m) return null;
+      var lo = parseFloat(m[1].replace(/,/g, ''));
+      var hi = m[2] ? parseFloat(m[2].replace(/,/g, '')) : lo;
+      return [lo, hi];
+    }
+    function fmtMoney(n) {
+      return n % 1 === 0 ? String(n) : n.toFixed(2);
+    }
+    function moneyPair(a) {
+      if (!a) return null;
+      return a[0] === a[1] ? 'about $' + fmtMoney(a[0]) : '$' + fmtMoney(a[0]) + '\u2013$' + fmtMoney(a[1]);
+    }
+    function minutes(s) {
+      var m = s.match(/(\d+) minutes/);
+      return m ? parseInt(m[1], 10) : 0;
+    }
+    function joinAnd(arr) {
+      if (arr.length <= 1) return arr.join('');
+      return arr.slice(0, -1).join(', ') + ' plus ' + arr[arr.length - 1];
+    }
+    var capital = null;
+    var cap = costOf(steps[1]).match(/\$([\d,]+) of capital/);
+    if (cap) capital = parseInt(cap[1].replace(/,/g, ''), 10);
+    var g1 = amount(/\$([\d.]+)(?:\u2013([\d.]+))? of gas/, costOf(steps[0]));
+    var g2 = amount(/\$([\d.]+)(?:\u2013([\d.]+))? in gas/, costOf(steps[1]));
+    var setup = g1 && g2 ? [g1[0] + g2[0], g1[1] + g2[1]] : (g1 || g2);
+    var weekly = amount(/\$([\d.]+)(?:\u2013([\d.]+))? of gas a week/, costOf(steps[2]));
+    var active = minutes(timeOf(steps[0])) + minutes(timeOf(steps[1])) + minutes(timeOf(steps[4])) + minutes(timeOf(steps[5]));
+    var weeklyMin = minutes(timeOf(steps[2]));
+    var hold = null;
+    var hm = timeOf(steps[3]).match(/(\d+) days/);
+    if (hm) hold = parseInt(hm[1], 10);
+    var parts = [];
+    if (capital !== null) parts.push('$' + capital + ' of capital in the position');
+    var sg = moneyPair(setup);
+    var wg = moneyPair(weekly);
+    if (sg) parts.push(sg + ' of gas to set up' + (wg ? ', then ' + wg + ' of gas a week' : ''));
+    var tb = [];
+    if (active) tb.push(active + ' minutes of active time');
+    if (weeklyMin) tb.push(weeklyMin + ' minutes a week');
+    if (hold !== null) tb.push('a ' + hold + '-day hold');
+    if (tb.length) parts.push(joinAnd(tb));
+    if (!parts.length) return null;
+    return el('div', { class: 'totals' }, el('b', { text: 'Plan total' }), ' ' + parts.join(' \u00b7 '));
   }
 
   function header() {
@@ -334,7 +430,8 @@
         var action = at >= 0 ? s.slice(0, at) : s;
         var tail = at >= 0 ? s.slice(at + 1) : '';
         return el('li', null, el('b', { text: action }), el('span', { class: 'cost', text: tail }));
-      }))
+      })),
+      planTotals(steps)
     ));
     if (typeof dialog.showModal === 'function') {
       if (!dialog.open) dialog.showModal();
@@ -349,6 +446,10 @@
     shell.appendChild(header());
     shell.appendChild(lede());
     shell.appendChild(controls());
+    if (state.tab === 'pre-token') {
+      var chart = chartPanel();
+      if (chart) shell.appendChild(chart);
+    }
     shell.appendChild(state.tab === 'pre-token' ? boardTable() : liveTable());
     if (state.tab === 'pre-token') shell.appendChild(modelPanel());
     app.appendChild(shell);
